@@ -390,10 +390,8 @@ const AppointmentListSection = styled.div`
 `;
 
 function AdminDashboard() {
-  const { instanceId } = useInstance();
-  const [appointments, setAppointments] = useState([]);
+  const { instanceId, appointments, availability, refreshInstanceData } = useInstance();
   const [selectedDate, setSelectedDate] = useState(null);
-  const [availability, setAvailability] = useState({});
   const [newTimeSlot, setNewTimeSlot] = useState('');
   const [activeTab, setActiveTab] = useState('ALL');
   const { user, logout } = useContext(AuthContext);
@@ -420,57 +418,6 @@ function AdminDashboard() {
     const input = document.createElement('input');
     input.type = 'time';
     setHasNativeTimePicker(input.type === 'time');
-    const verifyAdmin = async () => {
-      try {
-        const response = await fetch('/api/admin/verify', {
-          credentials: 'include'
-        });
-
-        if (!response.ok) {
-          navigate('/login');
-          return;
-        }
-
-        const data = await response.json();
-        if (!data) {
-          navigate('/login');
-          return;
-        }
-
-        if (!instanceId) return;
-
-        const fetchAppointments = async () => {
-          try {
-            const response = await fetch(`/api/${instanceId}/appointments`, { credentials: 'include' });
-            if (response.ok) {
-              const data = await response.json();
-              setAppointments(data);
-            }
-          } catch (error) {
-            console.error('Error fetching appointments:', error);
-          }
-        };
-
-        const fetchAvailability = async () => {
-          try {
-            const response = await fetch(`/api/${instanceId}/availability`, { credentials: 'include' });
-            if (response.ok) {
-              const data = await response.json();
-              setAvailability(data);
-            }
-          } catch (error) {
-            console.error('Error fetching availability:', error);
-          }
-        };
-
-        fetchAppointments();
-        fetchAvailability();
-      } catch (error) {
-        navigate('/login');
-      }
-    };
-
-    verifyAdmin();
 
     const interval = setInterval(async () => {
         try {
@@ -500,8 +447,7 @@ function AdminDashboard() {
         credentials: 'include'
       });
       if (response.ok) {
-        const updatedAppointment = await response.json();
-        setAppointments(prev => prev.map(appt => appt.id === id ? updatedAppointment : appt));
+        refreshInstanceData();
       }
     } catch (error) {
       console.error('Error adding note:', error);
@@ -528,8 +474,7 @@ function AdminDashboard() {
         credentials: 'include'
       });
       if (response.ok) {
-        const updatedAppointment = await response.json();
-        setAppointments(prev => prev.map(appt => appt.id === appointmentId ? updatedAppointment : appt));
+        refreshInstanceData();
       }
     } catch (error) {
       console.error('Error removing note:', error);
@@ -548,8 +493,7 @@ function AdminDashboard() {
         credentials: 'include'
       });
       if (response.ok) {
-        const updatedAppointment = await response.json();
-        setAppointments(prev => prev.map(appt => appt.id === appointmentId ? updatedAppointment : appt));
+        refreshInstanceData();
       }
     } catch (error) {
       console.error('Error editing note:', error);
@@ -565,18 +509,7 @@ function AdminDashboard() {
         });
 
         if (response.ok) {
-            setAppointments(prev => prev.filter(appt => appt.id !== id));
-
-            if (appointmentToCancel) {
-                const dateString = appointmentToCancel.date;
-                setAvailability(prev => {
-                    const newAvailability = { ...prev };
-                    if (newAvailability[dateString] && newAvailability[dateString].availableSlots) {
-                        newAvailability[dateString].availableSlots[appointmentToCancel.time] = true;
-                    }
-                    return newAvailability;
-                });
-            }
+            refreshInstanceData();
         }
     } catch (error) {
         console.error('Error canceling appointment:', error);
@@ -593,8 +526,7 @@ function AdminDashboard() {
       });
 
       if (response.ok) {
-        const updatedAppointment = await response.json();
-        setAppointments(prev => prev.map(appt => appt.id === id ? updatedAppointment : appt));
+        refreshInstanceData();
       }
     } catch (error) {
       console.error('Error completing appointment:', error);
@@ -640,15 +572,7 @@ function AdminDashboard() {
         });
 
         if (response.ok) {
-          const updatedSlot = await response.json();
-          setAvailability(prev => {
-            const newAvailability = { ...prev };
-            if (!newAvailability[updatedSlot.date]) {
-              newAvailability[updatedSlot.date] = { isAvailable: true, availableSlots: {} };
-            }
-            newAvailability[updatedSlot.date].availableSlots[updatedSlot.time] = true;
-            return newAvailability;
-          });
+          refreshInstanceData();
           setNewTimeSlot('');
         }
       } catch (error) {
@@ -669,13 +593,7 @@ function AdminDashboard() {
         });
 
         if (response.ok) {
-          setAvailability(prev => {
-            const newAvailability = { ...prev };
-            if (newAvailability[dateString] && newAvailability[dateString].availableSlots[time]) {
-              delete newAvailability[dateString].availableSlots[time];
-            }
-            return newAvailability;
-          });
+          refreshInstanceData();
         }
       } catch (error) {
         console.error('Error removing time slot:', error);
@@ -702,8 +620,7 @@ function AdminDashboard() {
       });
 
       if (response.ok) {
-        const updatedAppointment = await response.json();
-        setAppointments(prev => prev.map(appt => appt.id === id ? updatedAppointment : appt));
+        refreshInstanceData();
       }
     } catch (error) {
       console.error('Error updating appointment name:', error);
@@ -748,8 +665,7 @@ function AdminDashboard() {
       });
 
       if (response.ok) {
-        const addedAppointment = await response.json();
-        setAppointments(prev => [...prev, addedAppointment]);
+        refreshInstanceData();
         setShowModal(false);
         setNewAppointment({ clientName: '', phone: '', time: '' });
         setNewTimeSlot('');
