@@ -15,7 +15,7 @@ export const InstanceProvider = ({ children }) => {
     const [instanceData, setInstanceData] = useState({
         instance: null,
         appointments: [],
-        availability: [],
+        availability: {},
         coupons: [],
     });
     const [loading, setLoading] = useState(true);
