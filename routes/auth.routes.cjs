@@ -12,7 +12,9 @@ const SHORT_SESSION = 5 * 60 * 1000;
 // User Sign-Up
 router.post('/signup', async (req, res) => {
   const { name, email, password } = req.body;
-  const users = db.get('users').value();
+
+  await db.read();
+  const users = db.data.users;
   const existingUser = users.find(user => user.email === email);
 
   if (existingUser) {
@@ -21,7 +23,20 @@ router.post('/signup', async (req, res) => {
 
   const hashedPassword = await bcrypt.hash(password, 10);
   const newUser = { id: Date.now().toString(), name, email, password: hashedPassword };
-  db.get('users').push(newUser).write();
+
+  db.data.users.push(newUser);
+
+  const newInstanceId = name.toLowerCase().replace(/\s+/g, '-');
+  db.data.instances[newInstanceId] = {
+      name: `${name}'s Scheduler`,
+      phoneNumber: '',
+      admins: [{ username: name, password: 'password' }],
+      coupons: [],
+      appointments: [],
+      availability: {}
+  };
+
+  await db.write();
 
   req.session.isAuthenticated = true;
   req.session.user = { id: newUser.id, name: newUser.name, email: newUser.email };
