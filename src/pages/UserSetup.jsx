@@ -71,8 +71,15 @@ const UserSetup = () => {
             });
             if (response.ok) {
                 const createdInstance = await response.json();
-                alert(`Instance "${createdInstance.name}" created successfully!`);
-                navigate(`/${username}`);
+                const admin = createdInstance.admin;
+                alert(
+                    `Instance "${createdInstance.name}" created successfully!\n\n` +
+                    `Admin Credentials:\n` +
+                    `Username: ${admin.username}\n` +
+                    `Password: ${admin.password}\n\n` +
+                    `Please save these credentials securely.`
+                );
+                navigate(`/${username}/admin`);
             } else {
                 const errorData = await response.json();
                 alert(`Failed to create instance: ${errorData.message}`);
