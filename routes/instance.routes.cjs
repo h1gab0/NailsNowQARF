@@ -37,7 +37,7 @@ router.post('/instances', requireAuth, async (req, res) => {
     const adminUser = db.data.instances[username].admins[0];
     const messageBody = `Welcome to the platform! Your instance "${username}" has been successfully configured. You can log in with your existing credentials.`;
 
-    res.status(200).json({ id: username, name: username });
+    res.status(200).json({ id: username, name: username, admin: adminUser });
 });                                                                                                                                                                   
                                                                                                                                                                       
 router.get('/instances/:username/stats', requireSuperAdmin, async (req, res) => {
