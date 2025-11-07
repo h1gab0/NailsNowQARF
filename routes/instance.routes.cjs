@@ -26,19 +26,18 @@ router.post('/instances', requireAuth, async (req, res) => {
         return res.status(400).json({ message: 'Phone number is required.' });
     }
     await db.read();
-    if (db.data.instances[username]) {
-        return res.status(409).json({ message: 'Instance for this user already exists.' });
+    if (!db.data.instances[username]) {
+        return res.status(404).json({ message: 'Instance not found.' });
     }
-    const instanceData = await getInstanceData(username, username);
-    instanceData.name = username;
-    instanceData.phoneNumber = phoneNumber;
-    instanceData.userId = userId;
+
+    db.data.instances[username].phoneNumber = phoneNumber;
+    db.data.instances[username].userId = userId;
     await db.write();
 
-    const adminUser = instanceData.admins[0];
-    const messageBody = `Welcome to the platform! Your new instance "${username}" has been created. You can log in with the following credentials:\nUsername: ${adminUser.username}\nPassword: ${adminUser.password}`;
+    const adminUser = db.data.instances[username].admins[0];
+    const messageBody = `Welcome to the platform! Your instance "${username}" has been successfully configured. You can log in with your existing credentials.`;
 
-    res.status(201).json({ id: username, name: username });
+    res.status(200).json({ id: username, name: username });
 });                                                                                                                                                                   
                                                                                                                                                                       
 router.get('/instances/:username/stats', requireSuperAdmin, async (req, res) => {
