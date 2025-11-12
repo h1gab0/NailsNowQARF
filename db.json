@@ -6,7 +6,7 @@
       "admins": [
         {
           "username": "admin",
-          "password": "password"
+          "password": "$2b$10$v9rkdNH4w.gQU/ndUe818eiJgPEnVm4Jp57y/XjChm8bOkG.Cn/Wi"
         }
       ],
       "coupons": [

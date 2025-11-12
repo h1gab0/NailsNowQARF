@@ -21,6 +21,8 @@ export const InstanceProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    const channel = new BroadcastChannel('instance-refresh');
+
     const fetchInstanceData = useCallback(async () => {
         if (!id) return;
         setLoading(true);
@@ -40,11 +42,25 @@ export const InstanceProvider = ({ children }) => {
 
     useEffect(() => {
         fetchInstanceData();
-    }, [fetchInstanceData]);
+
+        const handleMessage = (event) => {
+            if (event.data.type === 'refresh' && event.data.instanceId === id) {
+                fetchInstanceData();
+            }
+        };
+
+        channel.addEventListener('message', handleMessage);
+
+        return () => {
+            channel.removeEventListener('message', handleMessage);
+            channel.close();
+        };
+    }, [fetchInstanceData, id]);
 
     const refreshInstanceData = useCallback(() => {
         fetchInstanceData();
-    }, [fetchInstanceData]);
+        channel.postMessage({ type: 'refresh', instanceId: id });
+    }, [fetchInstanceData, id]);
 
     const value = {
         instanceId: id,
