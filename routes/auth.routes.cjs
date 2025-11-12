@@ -27,10 +27,11 @@ router.post('/signup', async (req, res) => {
   db.data.users.push(newUser);
 
   const newInstanceId = name.toLowerCase().replace(/\s+/g, '-');
+  const instanceAdminPassword = await bcrypt.hash('password', 10);
   db.data.instances[newInstanceId] = {
       name: `${name}'s Scheduler`,
       phoneNumber: '',
-      admins: [{ username: name, password: 'password' }],
+      admins: [{ username: name, password: instanceAdminPassword }],
       coupons: [],
       appointments: [],
       availability: {}
@@ -83,23 +84,26 @@ router.post('/admin/login', (req, res) => {
 router.post('/:instanceId/login', async (req, res) => {
   const instanceData = await getInstanceData(req.params.instanceId);
   const { username, password } = req.body;
-  const adminUser = instanceData.admins.find(
-    admin => admin.username === username && admin.password === password
-  );
+  const adminUser = instanceData.admins.find(admin => admin.username === username);
 
   if (adminUser) {
-    req.session.isAuthenticated = true;
-    req.session.user = {
-      username,
-      isSuperAdmin: false,
-      instanceId: req.params.instanceId
-    };
-    req.session.cookie.maxAge = LONG_SESSION;
-    res.json({
-      username,
-      isSuperAdmin: false,
-      instanceId: req.params.instanceId
-    });
+    const isPasswordValid = await bcrypt.compare(password, adminUser.password);
+    if (isPasswordValid) {
+      req.session.isAuthenticated = true;
+      req.session.user = {
+        username,
+        isSuperAdmin: false,
+        instanceId: req.params.instanceId
+      };
+      req.session.cookie.maxAge = LONG_SESSION;
+      res.json({
+        username,
+        isSuperAdmin: false,
+        instanceId: req.params.instanceId
+      });
+    } else {
+      res.status(401).json({ message: 'Invalid credentials for this instance.' });
+    }
   } else {
     res.status(401).json({ message: 'Invalid credentials for this instance.' });
   }
