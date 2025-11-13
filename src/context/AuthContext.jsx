@@ -18,7 +18,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const verifySession = async () => {
       try {
-        const response = await fetch('/api/admin/verify', { credentials: 'include' });
+        const response = await fetch('/api/auth/admin/verify', { credentials: 'include' });
         if (response.ok) {
           const userData = await response.json();
           setUser(userData);
@@ -41,7 +41,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (username, password, instanceId) => {
     // If an instanceId is provided, it's an instance login. Otherwise, it's a super admin login.
-    const url = instanceId ? `/api/${instanceId}/login` : '/api/admin/login';
+    const url = instanceId ? `/api/auth/${instanceId}/login` : '/api/auth/admin/login';
 
     const response = await fetch(url, {
       method: 'POST',
@@ -63,7 +63,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await fetch('/api/admin/logout', { method: 'POST', credentials: 'include' });
+      await fetch('/api/auth/admin/logout', { method: 'POST', credentials: 'include' });
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
