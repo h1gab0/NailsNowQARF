@@ -18,6 +18,33 @@ const Title = styled.h1`
   text-align: center;
 `;
 
+const CredentialsContainer = styled.div`
+  padding: 2rem;
+  background-color: ${({ theme }) => theme.colors.background};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: 8px;
+  text-align: center;
+  margin-top: 2rem;
+
+  p {
+    font-size: 1.1rem;
+    color: ${({ theme }) => theme.colors.text};
+    margin-bottom: 1rem;
+  }
+
+  strong {
+    font-weight: bold;
+    color: ${({ theme }) => theme.colors.primary};
+  }
+`;
+
+const ButtonGroup = styled.div`
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1.5rem;
+`;
+
 const Form = styled.form`
     display: flex;
     flex-direction: column;
@@ -50,6 +77,7 @@ const UserSetup = () => {
     const { username } = useParams();
     const navigate = useNavigate();
     const [instanceDetails, setInstanceDetails] = useState({ id: username, phoneNumber: '' });
+    const [adminCredentials, setAdminCredentials] = useState(null);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -71,15 +99,7 @@ const UserSetup = () => {
             });
             if (response.ok) {
                 const createdInstance = await response.json();
-                const admin = createdInstance.admin;
-                alert(
-                    `Instance "${createdInstance.name}" created successfully!\n\n` +
-                    `Admin Credentials:\n` +
-                    `Username: ${admin.username}\n` +
-                    `Password: ${admin.password}\n\n` +
-                    `Please save these credentials securely.`
-                );
-                navigate(`/${username}/admin`);
+                setAdminCredentials(createdInstance.admin);
             } else {
                 const errorData = await response.json();
                 alert(`Failed to create instance: ${errorData.message}`);
@@ -93,23 +113,39 @@ const UserSetup = () => {
     return (
         <SetupContainer>
             <Title>Setup Your Instance</Title>
-            <Form onSubmit={handleCreateInstance}>
-                <Input
-                    type="text"
-                    name="id"
-                    placeholder="Instance URL ID"
-                    value={instanceDetails.id}
-                    disabled
-                />
-                <Input
-                    type="tel"
-                    name="phoneNumber"
-                    placeholder="Your Phone Number (e.g., +1234567890)"
-                    value={instanceDetails.phoneNumber}
-                    onChange={handleInputChange}
-                />
-                <Button type="submit">Create Instance</Button>
-            </Form>
+            {adminCredentials ? (
+                <CredentialsContainer>
+                    <p>Instance created successfully!</p>
+                    <p>Username: <strong>{adminCredentials.username}</strong></p>
+                    <p>Password: <strong>{adminCredentials.password}</strong></p>
+                    <ButtonGroup>
+                        <Button onClick={() => navigator.clipboard.writeText(adminCredentials.password)}>
+                            Copy Password
+                        </Button>
+                        <Button onClick={() => navigate(`/${username}/admin`)}>
+                            Go to Admin Page
+                        </Button>
+                    </ButtonGroup>
+                </CredentialsContainer>
+            ) : (
+                <Form onSubmit={handleCreateInstance}>
+                    <Input
+                        type="text"
+                        name="id"
+                        placeholder="Instance URL ID"
+                        value={instanceDetails.id}
+                        disabled
+                    />
+                    <Input
+                        type="tel"
+                        name="phoneNumber"
+                        placeholder="Your Phone Number (e.g., +1234567890)"
+                        value={instanceDetails.phoneNumber}
+                        onChange={handleInputChange}
+                    />
+                    <Button type="submit">Create Instance</Button>
+                </Form>
+            )}
         </SetupContainer>
     );
 };
