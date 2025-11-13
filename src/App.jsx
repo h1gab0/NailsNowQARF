@@ -32,7 +32,7 @@ const MainContent = styled.main`
   min-height: calc(100vh - 60px);
 `;
 
-function AppContent() {
+function AppContent({ withHeader = true }) {
   const { theme, isDarkMode } = useTheme();
   const location = useLocation();
 
@@ -43,7 +43,7 @@ function AppContent() {
   return (
     <StyledThemeProvider theme={isDarkMode ? darkTheme : lightTheme}>
       <GlobalStyles />
-      <Header />
+      {withHeader && <Header />}
       <MainContent>
         <Outlet />
       </MainContent>
@@ -67,24 +67,27 @@ export default function App() {
       <ThemeProvider>
         <AuthProvider>
           <Routes>
-            <Route element={<InstanceWrapper><AppContent /></InstanceWrapper>}>
-                {/* Super admin routes are top-level and don't have an instanceId */}
+            {/* Routes that DON'T need instance data */}
+            <Route element={<AppContent />}>
                 <Route path="/login" element={<UserLogin />} />
                 <Route path="/admin-login" element={<LoginComponent />} />
+                <Route path="/:username/login" element={<InstanceLogin />} />
                 <Route path="/super-admin" element={
                     <ProtectedRoute superAdminOnly={true}>
                         <SuperAdminDashboard />
                     </ProtectedRoute>
                 } />
+                <Route path="/" element={<LandingPage />} />
+            </Route>
 
-                {/* Instance routes are nested to inherit the username from the URL */}
+            {/* Routes that DO need instance data */}
+            <Route element={<InstanceWrapper><AppContent /></InstanceWrapper>}>
                 <Route path="/:username/setup" element={<UserSetup />} />
                 <Route path="/:username">
                     <Route index element={<Home />} />
                     <Route path="about" element={<About />} />
                     <Route path="contact" element={<Contact />} />
                     <Route path="schedule" element={<ClientScheduling />} />
-                    <Route path="login" element={<LoginComponent />} />
                     <Route path="admin" element={
                         <ProtectedRoute>
                             <AdminDashboard />
@@ -95,11 +98,8 @@ export default function App() {
                     <Route path="carousel/:id" element={<TrendDetails />} />
                     <Route path="coupon" element={<CouponPage />} />
                     <Route path="services" element={<Services />} />
-                <Route path="gallery" element={<Gallery />} />
+                    <Route path="gallery" element={<Gallery />} />
                 </Route>
-
-                {/* Redirect root path to the super admin login */}
-                <Route path="/" element={<LandingPage />} />
             </Route>
           </Routes>
         </AuthProvider>

@@ -91,7 +91,7 @@ const LoginComponent = () => {
   const [error, setError] = useState('');
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
-  const { instanceId } = useParams();
+  const { username: instanceId } = useParams();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
