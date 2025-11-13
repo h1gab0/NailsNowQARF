@@ -16,27 +16,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const verifySession = async () => {
-      try {
-        const response = await fetch('/api/auth/admin/verify', { credentials: 'include' });
-        if (response.ok) {
-          const userData = await response.json();
-          setUser(userData);
-          setIsAuthenticated(true);
-        } else {
-          setUser(null);
-          setIsAuthenticated(false);
-        }
-      } catch (error) {
-        console.error('Session verification error:', error);
-        setUser(null);
-        setIsAuthenticated(false);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    verifySession();
+    setLoading(false);
   }, []);
 
   const login = async (username, password, instanceId) => {

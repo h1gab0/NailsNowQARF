@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { GoogleLogin } from '@react-oauth/google';
 
 const Pricing = ({ isAnnualBilling, setIsAnnualBilling, handleGoogleSuccess, handleGoogleError }) => {

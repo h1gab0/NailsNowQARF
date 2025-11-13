@@ -44,6 +44,18 @@
           }
         }
       }
+    },
+    "test-instance": {
+      "name": "Test Instance",
+      "admins": [
+        {
+          "username": "test-instance",
+          "password": "$2b$10$v0oDErJ4y.Vgu.3TqFNehOuQ24veypGiGvqXOH7SYDcM64a/eGqbu"
+        }
+      ],
+      "coupons": [],
+      "appointments": [],
+      "availability": {}
     }
   }
 }

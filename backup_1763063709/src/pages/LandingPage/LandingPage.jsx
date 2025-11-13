@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import Typed from 'typed.js';
 import * as echarts from 'echarts';
-
+import anime from 'animejs';
 import Splide from '@splidejs/splide';
 import '@splidejs/splide/dist/css/splide.min.css';
 import { Link } from 'react-router-dom';
@@ -175,6 +175,16 @@ const LandingPage = () => {
         observer.disconnect();
     };
   }, []);
+
+    // Pricing toggle animation
+    useEffect(() => {
+        anime({
+            targets: ['#free-price', '#premium-price'],
+            scale: [1, 1.1, 1],
+            duration: 300,
+            easing: 'easeInOutQuad'
+        });
+    }, [isAnnualBilling]);
 
 
   // Testimonials slider
