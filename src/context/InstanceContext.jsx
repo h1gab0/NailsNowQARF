@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { fetchInstanceData as fetchApiInstanceData } from '../utils/api';
 
 const InstanceContext = createContext(null);
+const channel = new BroadcastChannel('instance-refresh');
 
 export const useInstance = () => {
     return useContext(InstanceContext);
@@ -20,8 +21,6 @@ export const InstanceProvider = ({ children }) => {
     });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-
-    const channel = new BroadcastChannel('instance-refresh');
 
     const fetchInstanceData = useCallback(async () => {
         if (!id) return;
@@ -53,7 +52,6 @@ export const InstanceProvider = ({ children }) => {
 
         return () => {
             channel.removeEventListener('message', handleMessage);
-            channel.close();
         };
     }, [fetchInstanceData, id]);
 
