@@ -27,11 +27,10 @@ router.post('/signup', async (req, res) => {
   db.data.users.push(newUser);
 
   const newInstanceId = name.toLowerCase().replace(/\s+/g, '-');
-  const instanceAdminPassword = await bcrypt.hash('password', 10);
   db.data.instances[newInstanceId] = {
       name: `${name}'s Scheduler`,
       phoneNumber: '',
-      admins: [{ username: name, password: instanceAdminPassword }],
+      admins: [{ username: name, password: hashedPassword }],
       coupons: [],
       appointments: [],
       availability: {}
