@@ -93,16 +93,7 @@ router.get('/coupons/stats', requireAdmin, (req, res) => {
 
 // --- Availability ---
 router.get('/availability/dates', (req, res) => {
-    const today = startOfToday();
-    const filteredAvailability = {};
-    for (const [date, details] of Object.entries(req.instanceData.availability)) {
-        const dateIsAfterToday = isAfter(new Date(date), today) || date === format(today, 'yyyy-MM-dd');
-        const hasAvailableSlots = Object.values(details.availableSlots).some(isAvailable => isAvailable);
-        if (dateIsAfterToday && hasAvailableSlots) {
-            filteredAvailability[date] = details;
-        }
-    }
-    res.json(filteredAvailability);
+    res.json(req.instanceData.availability || {});
 });
 
 router.get('/availability/slots/:date', (req, res) => {

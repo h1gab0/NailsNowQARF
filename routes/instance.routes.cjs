@@ -54,7 +54,7 @@ router.get('/instances/:username', async (req, res) => {
     await db.read();
     const instance = db.data.instances[req.params.username];
     if (instance) {
-        res.json({ id: req.params.username, name: instance.name });
+        res.json({ id: req.params.username, ...instance });
     } else {
         res.status(404).json({ message: 'Instance not found' });
     }
