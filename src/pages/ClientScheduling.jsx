@@ -131,7 +131,7 @@ const ImagePreview = styled.img`
 `;
 
 const ClientScheduling = () => {
-  const { instanceId } = useInstance();
+  const { instanceId, availability } = useInstance();
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
   const [name, setName] = useState('');
@@ -144,41 +144,28 @@ const ClientScheduling = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchAvailableDates = async () => {
-      try {
-        const response = await fetch(`/api/${instanceId}/availability/dates`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch available dates');
+    if (availability) {
+      const dates = Object.keys(availability).filter(date => {
+        if (availability[date] && availability[date].availableSlots) {
+          const slots = availability[date].availableSlots;
+          return Object.values(slots).some(isAvailable => isAvailable);
         }
-        const data = await response.json();
-        setAvailableDates(data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    if (instanceId) {
-        fetchAvailableDates();
+        return false;
+      });
+      setAvailableDates(dates);
     }
-  }, [instanceId]);
+  }, [availability]);
 
   useEffect(() => {
-    const fetchAvailableSlots = async (date) => {
-      try {
-        const response = await fetch(`/api/${instanceId}/availability/slots/${date}`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch available slots');
-        }
-        const data = await response.json();
-        setAvailableSlots(data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    if (selectedDate && instanceId) {
-      fetchAvailableSlots(selectedDate);
+    if (selectedDate && availability && availability[selectedDate] && availability[selectedDate].availableSlots) {
+      const slots = Object.entries(availability[selectedDate].availableSlots)
+        .filter(([_, isAvailable]) => isAvailable)
+        .map(([time, _]) => time);
+      setAvailableSlots(slots);
+    } else {
+      setAvailableSlots([]);
     }
-  }, [selectedDate, instanceId]);
+  }, [selectedDate, availability]);
 
   const handleDateSelection = (date) => {
     setSelectedDate(date);
