@@ -131,7 +131,7 @@ const ImagePreview = styled.img`
 `;
 
 const ClientScheduling = () => {
-  const { instanceId, availability } = useInstance();
+  const { instanceId, availability, refreshInstanceData } = useInstance();
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
   const [name, setName] = useState('');
@@ -226,6 +226,7 @@ const ClientScheduling = () => {
         }
 
         const newAppointment = await response.json();
+        await refreshInstanceData(instanceId);
         navigate(`/${instanceId}/appointment-confirmation/${newAppointment.id}`);
     } catch (networkError) {
         console.error('Network or other error creating appointment:', networkError);
