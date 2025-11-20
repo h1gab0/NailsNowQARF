@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
-const { db, getInstanceData } = require('../db.cjs');
+const { db, getInstanceData } = require('../../db.cjs');
 
 // --- Auth ---
 const SUPER_ADMIN_USERNAME = process.env.SUPER_ADMIN_USERNAME;
@@ -48,7 +48,8 @@ router.post('/signup', async (req, res) => {
 // User Sign-In
 router.post('/signin', async (req, res) => {
   const { email, password } = req.body;
-  const user = db.get('users').find({ email }).value();
+  await db.read();
+  const user = db.data.users.find(u => u.email === email); // Fixed: db.get('users')... isn't valid with lowdb v6+ style usually used in this project based on other files, sticking to db.data
 
   if (!user) {
     return res.status(401).json({ message: 'Invalid credentials' });

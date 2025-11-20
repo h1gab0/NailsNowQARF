@@ -1,0 +1,27 @@
+Module: Auth
+Description: Handles authentication for Users, Super Admins, and Instance Admins.
+Dependencies: db.cjs, bcrypt, express-session
+
+Interfaces:
+- POST /signup
+  - Input: { name, email, password }
+  - Output: User session object
+  - Side Effect: Creates a new User and a new Instance.
+
+- POST /signin
+  - Input: { email, password }
+  - Output: User session object
+
+- POST /admin/login
+  - Input: { username, password }
+  - Output: Super Admin session object
+
+- POST /:instanceId/login
+  - Input: { username, password }
+  - Output: Instance Admin session object
+
+- GET /admin/verify
+  - Output: Current session user or 401
+
+- POST /admin/logout
+  - Output: Success message

@@ -1,0 +1,55 @@
+Module: Salon
+Description: Handles core business operations: Appointments, Availability, and Coupons for a specific instance.
+Dependencies: db.cjs
+
+Context:
+- Routes are mounted under /:username, so req.params.username is available.
+- Uses instanceMiddleware to attach instanceData to req.
+
+Interfaces:
+- GET /public/coupons
+  - Output: List of available coupons (sanitized)
+
+- GET /coupons
+  - Auth: Admin
+  - Output: List of all coupons
+
+- POST /coupons
+  - Auth: Admin
+  - Input: { code, discount, usesLeft, expiresAt }
+  - Output: Created coupon
+
+- PUT /coupons/:code
+  - Auth: Admin
+  - Input: { usesLeft, expiresAt, inRotation }
+
+- DELETE /coupons/:code
+  - Auth: Admin
+
+- GET /availability/dates
+  - Output: Full availability object
+
+- GET /availability/slots/:date
+  - Output: List of available time slots
+
+- POST /availability
+  - Auth: Admin
+  - Input: { date, time }
+  - Description: Opens a time slot.
+
+- GET /appointments
+  - Auth: Admin
+  - Output: List of appointments
+
+- POST /appointments
+  - Input: { date, time, clientName, phone, couponCode, isAdminCreation }
+  - Output: Created appointment
+  - Side Effect: May award a coupon, decrements coupon usage, marks slot unavailable.
+
+- DELETE /appointments/:id
+  - Auth: Admin
+  - Side Effect: Restores coupon usage, frees up time slot.
+
+- PUT /appointments/:id
+  - Auth: Admin
+  - Input: { clientName, status, profit, materials, notes }

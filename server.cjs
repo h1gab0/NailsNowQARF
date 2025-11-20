@@ -5,9 +5,10 @@ const cors = require('cors');
 const app = express();
 const { initDb } = require('./db.cjs');
 
-const authRoutes = require('./routes/auth.routes.cjs');
-const instanceRoutes = require('./routes/instance.routes.cjs');
-const dataRoutes = require('./routes/data.routes.cjs');
+// Import modules
+const authRoutes = require('./modules/auth/routes.cjs');
+const instanceRoutes = require('./modules/instance/routes.cjs');
+const salonRoutes = require('./modules/salon/routes.cjs');
 
 // Middleware
 app.use(cors({ origin: true, credentials: true }));
@@ -25,7 +26,7 @@ app.use(session({
 // API Routes
 app.use('/api', authRoutes);
 app.use('/api', instanceRoutes);
-app.use('/api/:username', dataRoutes);
+app.use('/api/:username', salonRoutes);
 
 
 // Error handling middleware

@@ -1,0 +1,21 @@
+Module: Instance
+Description: Handles Instance management, configuration, and retrieval.
+Dependencies: db.cjs, express-session
+
+Interfaces:
+- GET /instances
+  - Auth: Super Admin
+  - Output: List of all instances (id, name)
+
+- POST /instances
+  - Auth: Authenticated User
+  - Input: { phoneNumber }
+  - Output: Updated instance info
+  - Description: Configures the instance for the logged-in user (User Setup).
+
+- GET /instances/:username/stats
+  - Auth: Super Admin
+  - Output: { appointments: count, coupons: count }
+
+- GET /instances/:username
+  - Output: Full instance object (availability, coupons, etc.)
