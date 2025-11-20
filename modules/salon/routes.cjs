@@ -1,7 +1,6 @@
 const express = require('express');
-const router = express.Router({ mergeParams: true }); // Important: mergeParams allows us to access :instanceId from the parent router
-const { db, getInstanceData } = require('../db.cjs');
-const { isAfter, startOfToday, addDays } = require('date-fns');
+const router = express.Router({ mergeParams: true }); // Important: mergeParams allows us to access :username from the parent router
+const { db, getInstanceData } = require('../../db.cjs');
 
 const requireAdmin = (req, res, next) => {
     if (req.session.isAuthenticated) { next(); }

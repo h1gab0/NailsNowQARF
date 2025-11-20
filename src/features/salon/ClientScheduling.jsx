@@ -4,7 +4,7 @@ import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 import { format, parseISO } from 'date-fns';
 import { FaCalendarAlt, FaClock, FaUser, FaImage, FaTicketAlt } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
-import { useInstance } from '../context/InstanceContext';
+import { useInstance } from '../../context/InstanceContext';
 
 const StepContainer = styled(motion.div)`
   background-color: ${({ theme }) => theme.colors.cardBackground};
