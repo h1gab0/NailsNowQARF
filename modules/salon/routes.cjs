@@ -224,4 +224,162 @@ router.put('/appointments/:id', requireAdmin, async (req, res) => {
     res.json(req.instanceData.appointments[appointmentIndex]);
 });
 
+// --- Services and Categories Management ---
+
+// Get all services and categories
+router.get('/services', (req, res) => {
+    res.json({
+        services: req.instanceData.services || [],
+        categories: req.instanceData.categories || []
+    });
+});
+
+// Add a new service
+router.post('/services', requireAdmin, async (req, res) => {
+    const { name, description, price, duration, category, features, icon, isPopular } = req.body;
+
+    if (!name || !price || !duration || !category) {
+        return res.status(400).json({ message: 'Missing required service fields' });
+    }
+
+    if (!req.instanceData.services) req.instanceData.services = [];
+
+    const newService = {
+        id: Date.now(),
+        name,
+        description,
+        price,
+        duration,
+        category,
+        features: features || [],
+        icon: icon || 'FaHandSparkles',
+        isPopular: isPopular || false
+    };
+
+    req.instanceData.services.push(newService);
+    await db.write();
+    res.status(201).json(newService);
+});
+
+// Update a service
+router.put('/services/:id', requireAdmin, async (req, res) => {
+    const { id } = req.params;
+    const { name, description, price, duration, category, features, icon, isPopular } = req.body;
+
+    if (!req.instanceData.services) req.instanceData.services = [];
+
+    const serviceIndex = req.instanceData.services.findIndex(s => s.id == id);
+
+    if (serviceIndex === -1) {
+        return res.status(404).json({ message: 'Service not found' });
+    }
+
+    const updatedService = {
+        ...req.instanceData.services[serviceIndex],
+        name: name !== undefined ? name : req.instanceData.services[serviceIndex].name,
+        description: description !== undefined ? description : req.instanceData.services[serviceIndex].description,
+        price: price !== undefined ? price : req.instanceData.services[serviceIndex].price,
+        duration: duration !== undefined ? duration : req.instanceData.services[serviceIndex].duration,
+        category: category !== undefined ? category : req.instanceData.services[serviceIndex].category,
+        features: features !== undefined ? features : req.instanceData.services[serviceIndex].features,
+        icon: icon !== undefined ? icon : req.instanceData.services[serviceIndex].icon,
+        isPopular: isPopular !== undefined ? isPopular : req.instanceData.services[serviceIndex].isPopular
+    };
+
+    req.instanceData.services[serviceIndex] = updatedService;
+    await db.write();
+    res.json(updatedService);
+});
+
+// Delete a service
+router.delete('/services/:id', requireAdmin, async (req, res) => {
+    const { id } = req.params;
+
+    if (!req.instanceData.services) return res.status(404).json({ message: 'No services found' });
+
+    const initialLength = req.instanceData.services.length;
+    req.instanceData.services = req.instanceData.services.filter(s => s.id != id);
+
+    if (req.instanceData.services.length === initialLength) {
+        return res.status(404).json({ message: 'Service not found' });
+    }
+
+    await db.write();
+    res.status(204).send();
+});
+
+// Get categories (public)
+router.get('/categories', (req, res) => {
+    res.json(req.instanceData.categories || []);
+});
+
+// Add a new category
+router.post('/categories', requireAdmin, async (req, res) => {
+    const { id, name } = req.body;
+
+    if (!id || !name) {
+        return res.status(400).json({ message: 'ID and Name are required' });
+    }
+
+    if (!req.instanceData.categories) req.instanceData.categories = [];
+
+    // Check for duplicates
+    if (req.instanceData.categories.some(c => c.id === id)) {
+        return res.status(400).json({ message: 'Category ID already exists' });
+    }
+
+    const newCategory = { id, name };
+    req.instanceData.categories.push(newCategory);
+    await db.write();
+    res.status(201).json(newCategory);
+});
+
+// Update a category
+router.put('/categories/:id', requireAdmin, async (req, res) => {
+    const { id } = req.params; // This is the old ID
+    const { name, newId } = req.body; // Allow changing ID if needed, though tricky with relations
+
+    if (!req.instanceData.categories) req.instanceData.categories = [];
+
+    const categoryIndex = req.instanceData.categories.findIndex(c => c.id === id);
+
+    if (categoryIndex === -1) {
+        return res.status(404).json({ message: 'Category not found' });
+    }
+
+    // If changing ID, check if new ID exists
+    if (newId && newId !== id && req.instanceData.categories.some(c => c.id === newId)) {
+        return res.status(400).json({ message: 'New Category ID already exists' });
+    }
+
+    const updatedCategory = {
+        id: newId || id,
+        name: name || req.instanceData.categories[categoryIndex].name
+    };
+
+    req.instanceData.categories[categoryIndex] = updatedCategory;
+    await db.write();
+    res.json(updatedCategory);
+});
+
+// Delete a category
+router.delete('/categories/:id', requireAdmin, async (req, res) => {
+    const { id } = req.params;
+
+    if (!req.instanceData.categories) return res.status(404).json({ message: 'No categories found' });
+
+    // Optional: Check if any services use this category before deleting
+    // For now, allowing deletion but maybe we should warn or prevent
+
+    const initialLength = req.instanceData.categories.length;
+    req.instanceData.categories = req.instanceData.categories.filter(c => c.id !== id);
+
+    if (req.instanceData.categories.length === initialLength) {
+        return res.status(404).json({ message: 'Category not found' });
+    }
+
+    await db.write();
+    res.status(204).send();
+});
+
 module.exports = router;
