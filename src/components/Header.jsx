@@ -204,7 +204,8 @@ const MobileScheduleButton = styled(Link)`
 `;
 
 function Header() {
-  const { instanceId, instance, loading } = useInstance();
+  const context = useInstance();
+  const { instanceId, instance, loading } = context || { instanceId: 'default', instance: null, loading: false };
   const location = useLocation();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);

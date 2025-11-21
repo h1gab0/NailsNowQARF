@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useInstance } from '../context/InstanceContext';
 import { 
   FaClock, 
   FaDollarSign, 
@@ -10,7 +11,10 @@ import {
   FaPaintBrush,
   FaInfoCircle,
   FaCheck,
-  FaArrowRight
+  FaArrowRight,
+  FaCut,
+  FaHeart,
+  FaGem
 } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 
@@ -121,26 +125,6 @@ const PopularBadge = styled(motion.div)`
   font-size: 0.8rem;
   font-weight: bold;
   box-shadow: ${({ theme }) => theme.shadows.small};
-`;
-
-const DetailButton = styled(motion.button)`
-  background-color: transparent;
-  border: 2px solid ${({ theme }) => theme.colors.primary};
-  color: ${({ theme }) => theme.colors.primary};
-  padding: 0.5rem 1rem;
-  border-radius: ${({ theme }) => theme.radii.medium};
-  margin-top: 1rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  transition: all 0.3s ease;
-
-  &:hover {
-    background-color: ${({ theme }) => theme.colors.primary};
-    color: ${({ theme }) => theme.colors.background};
-  }
 `;
 
 const Modal = styled(motion.div)`
@@ -270,6 +254,8 @@ const ServiceIcon = styled.div`
   font-size: 2.5rem;
   color: ${({ theme }) => theme.colors.primary};
   margin-bottom: 1rem;
+  display: flex;
+  justify-content: center;
   
   @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
     font-size: 2rem;
@@ -361,70 +347,52 @@ const InfoItem = styled.div`
   }
 `;
 
-const services = [
-  {
-    id: 1,
-    name: "Classic Manicure",
-    icon: FaHandSparkles,
-    description: "Traditional nail care service including shaping, cuticle care, and polish",
-    price: "$30",
-    duration: "45 min",
-    category: "basic",
-    isPopular: true,
-    features: [
-      "Nail shaping",
-      "Cuticle care",
-      "Hand massage",
-      "Polish application",
-      "Hot towel treatment",
-      "Moisturizing treatment"
-    ]
-  },
-  {
-    id: 2,
-    name: "Luxury Pedicure",
-    icon: FaSpa,
-    description: "Comprehensive foot care with extended massage and premium products",
-    price: "$50",
-    duration: "60 min",
-    category: "premium",
-    isPopular: true,
-    features: [
-      "Foot soak",
-      "Callus removal",
-      "Extended massage",
-      "Premium polish"
-    ]
-  },
-  {
-    id: 3,
-    name: "Gel Extensions",
-    icon: FaPaintBrush,
-    description: "Full set of gel nail extensions with your choice of design",
-    price: "$75",
-    duration: "90 min",
-    category: "special",
-    isPopular: true,
-    features: [
-      "Custom length",
-      "Nail art options",
-      "Long-lasting wear",
-      "Damage-free application"
-    ]
-  }
-];
+// Icon mapping
+const iconMap = {
+  'FaHandSparkles': FaHandSparkles,
+  'FaSpa': FaSpa,
+  'FaPaintBrush': FaPaintBrush,
+  'FaCut': FaCut,
+  'FaHeart': FaHeart,
+  'FaStar': FaStar,
+  'FaGem': FaGem,
+};
 
 function Services() {
   const [selectedService, setSelectedService] = useState(null);
   const [activeCategory, setActiveCategory] = useState('all');
+  const [services, setServices] = useState([]);
+  const [categories, setCategories] = useState([{ id: 'all', name: 'All Services' }]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { instanceId } = useInstance();
 
-  const categories = [
-    { id: 'all', name: 'All Services' },
-    { id: 'basic', name: 'Basic Services' },
-    { id: 'premium', name: 'Premium Services' },
-    { id: 'special', name: 'Special Treatments' },
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await fetch(`/api/${instanceId}/services`);
+        const data = await res.json();
+
+        setServices(data.services || []);
+
+        // Ensure 'All Services' is first and merged with backend categories
+        const backendCategories = data.categories || [];
+        setCategories([
+          { id: 'all', name: 'All Services' },
+          ...backendCategories
+        ]);
+
+        setLoading(false);
+      } catch (error) {
+        console.error('Failed to fetch services', error);
+        setLoading(false);
+      }
+    };
+
+    if (instanceId) {
+      fetchData();
+    }
+  }, [instanceId]);
 
   const handleBooking = () => {
     navigate('/schedule', { state: { selectedService } });
@@ -445,6 +413,21 @@ function Services() {
       document.body.style.overflow = 'unset';
     };
   }, [selectedService]);
+
+  // Helper to render icon safely
+  const renderIcon = (iconName) => {
+    const IconComponent = iconMap[iconName] || FaHandSparkles;
+    return <IconComponent />;
+  };
+
+  const renderIconLarge = (iconName) => {
+    const IconComponent = iconMap[iconName] || FaHandSparkles;
+    return <IconComponent size={40} />;
+  };
+
+  if (loading) {
+    return <ServicesContainer style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>Loading...</ServicesContainer>;
+  }
 
   return (
     <ServicesContainer>
@@ -487,7 +470,7 @@ function Services() {
                 {service.isPopular && <PopularBadge>Popular</PopularBadge>}
                 <div>
                   <ServiceIcon>
-                    <service.icon />
+                    {renderIcon(service.icon)}
                   </ServiceIcon>
                   <ServiceName>{service.name}</ServiceName>
                   <ServiceDescription>{service.description}</ServiceDescription>
@@ -537,7 +520,7 @@ function Services() {
                   ×
                 </CloseButton>
                 <ServiceIcon>
-                  <selectedService.icon size={40} />
+                  {renderIconLarge(selectedService.icon)}
                 </ServiceIcon>
                 <ServiceName>{selectedService.name}</ServiceName>
                 <ServiceDescription>{selectedService.description}</ServiceDescription>
@@ -571,4 +554,4 @@ function Services() {
   );
 }
 
-export default Services; 
+export default Services;
